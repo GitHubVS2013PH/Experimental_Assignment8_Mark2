@@ -1,7 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
 
-
+/**
+ * One object of this class instantiates the cellular subscription graph
+ */
 public class TestGraphView2 {
     public static void main(String[] args) {
         final int WIDTH = 800, HEIGHT = 600;

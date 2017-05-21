@@ -1,10 +1,10 @@
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.awt.geom.Line2D;
-import java.awt.geom.Rectangle2D;
 
-
+/**
+ * One object of this class graphs the LinkedList country data.
+ */
 public class GraphView2 extends JPanel {
     private Font font;
     private int numYears;
@@ -19,7 +19,8 @@ public class GraphView2 extends JPanel {
     final private int YEARS_FOR_MAX = 10;
     final private boolean CONNECT_DOTS = true;
     final private double TOP_Y_VALUE_DEFAULT = 200.0;
-    final int MARGIN = 40, TICK_SIZE = 14, POINT_SIZE = 10;
+    final int MARGIN = 40, TICK_SIZE = 14, LINE_WIDTH = 2;
+    final int POINT_SIZE = 8, HALF_POINT = POINT_SIZE / 2;
     final int Y_LBL_SHIFT_X = 38, Y_LBL_SHIFT_Y = 5, X_LBL_SHIFT_Y = 13;
     final int MAX_X_INTERVALS = 10, NUM_Y_INTERVALS = 10;
 
@@ -28,6 +29,12 @@ public class GraphView2 extends JPanel {
             Color.darkGray, Color.green, Color.lightGray, Color.magenta,
             Color.orange, Color.pink, Color.red, Color.yellow};
 
+    /**
+     * Constructor.
+     * @param width frame width.
+     * @param height frame height.
+     * @param countries LinkeList of Country objects for graphing.
+     */
     public GraphView2(int width, int height, LinkedList<Country> countries) {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -40,7 +47,7 @@ public class GraphView2 extends JPanel {
         setMapAndAxisParameters(width, height, countries);
         mapValues(countries);
 
-        JPanel myPanel2 = new MyPanel2();
+        JPanel myPanel2 = new GraphPanel();
         add(myPanel2);
         //add(myPanel3);
     }
@@ -74,8 +81,8 @@ public class GraphView2 extends JPanel {
             SubscriptionYear[] subYears = country.getSubscriptions();
             Color pntColor = colorArray[countryCntr % colorArray.length];
             for(SubscriptionYear subYear : subYears) {
-                double mappedX = map(subYear.getYear(), dataMinX, dataMaxX, plottedXmin, plottedXmax) - POINT_SIZE / 2;
-                double mappedY = map(subYear.getSubscriptions(), dataMinY, dataMaxY, plottedYmin, plottedYmax) - POINT_SIZE / 2;
+                double mappedX = map(subYear.getYear(), dataMinX, dataMaxX, plottedXmin, plottedXmax) - HALF_POINT;
+                double mappedY = map(subYear.getSubscriptions(), dataMinY, dataMaxY, plottedYmin, plottedYmax) - HALF_POINT;
                 ColoredPoint tempPnt = new ColoredPoint(pntColor, mappedX, mappedY, subYear.getYear(), subYear.getSubscriptions());
                 graphPoints.add(tempPnt);
             }
@@ -88,20 +95,28 @@ public class GraphView2 extends JPanel {
         return plottedMin + (plottedMax - plottedMin) * ((value - dataMin) / (dataMax - dataMin));
     }
 
-    class MyPanel2 extends JPanel {
-        public MyPanel2() {
-            setLayout(new BorderLayout());  // new
+    /**
+     * One object of this class graphs the country cellular subscription and
+     * adds its color legend.
+     */
+    class GraphPanel extends JPanel {
+        public GraphPanel() {
+            setLayout(new BorderLayout());
             setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            setOpaque(true);
-            setForeground(Color.BLACK);
+            //setOpaque(true);
+            //setForeground(Color.BLACK);
             setBounds(0,0, getWidth(), getHeight());
             //JPanel myPanel3 = new MyPanel3();
             //add(myPanel3,BorderLayout.CENTER); // <--------------- Legends to added like this
-            add(pointLegends, BorderLayout.CENTER);
+            add(pointLegends, BorderLayout.CENTER); // adds legend panel to graph panel
         }
 
+        /**
+         * Paints axes and plots points for cellular subscription graph.
+         * @param g graphics environment.
+         */
         @Override
-        public void paintComponent(Graphics g) { // MyPanel2
+        public void paintComponent(Graphics g) {
 //            super.paintComponent(g);
 //            setBounds(300,300, LBL_WIDTH*2, LBL_HEIGHT);
 //            g.setColor(Color.RED);
@@ -125,10 +140,26 @@ public class GraphView2 extends JPanel {
             DrawYAxisTicksAndLabels(numIntervals, dataMaxY, g2, false);
 
             // graphs points in graphPoints LinkedList
+            int startX = 0, startY = 0;
+            Color colorFlag = Color.white;
             Color oldColor = g.getColor();
+            g2.setStroke(new BasicStroke(LINE_WIDTH));
             for (ColoredPoint currPnt : graphPoints) {
-                g.setColor(currPnt.getColor());
-                g.fillOval((int)currPnt.getX(), (int)currPnt.getY(), POINT_SIZE, POINT_SIZE);
+                g2.setColor(currPnt.getColor());
+                boolean firstPoint = !colorFlag.equals(currPnt.getColor()); // flags next plot
+                g2.fillOval((int)currPnt.getX(), (int)currPnt.getY(), POINT_SIZE, POINT_SIZE);
+                if (CONNECT_DOTS) {
+                    if (!firstPoint)
+                        g2.draw(new Line2D.Float(startX + HALF_POINT, startY + HALF_POINT,
+                                (int)currPnt.getX() + HALF_POINT, (int)currPnt.getY() + HALF_POINT));
+//                        g2.drawLine(startX + HALF_POINT, startY + HALF_POINT,
+//                                (int)currPnt.getX() + HALF_POINT, (int)currPnt.getY() + HALF_POINT);
+                    else
+                        colorFlag = currPnt.getColor();
+
+                    startX = (int)currPnt.getX();
+                    startY = (int)currPnt.getY();
+                }
             }
 
             //pointLegends.graphLegends(g);
@@ -140,36 +171,12 @@ public class GraphView2 extends JPanel {
 //        public Dimension getPreferredSize() { return new Dimension(500,500); }
     }
 
-    class MyPanel3 extends JPanel {
-        final int LBL_WIDTH = 100, LBL_HEIGHT = 50;
-
-        public MyPanel3() {
-            setBorder(BorderFactory.createLineBorder(Color.ORANGE));
-            setOpaque(true);
-            setForeground(Color.BLACK);
-            setBounds(200,200, LBL_WIDTH*3, LBL_HEIGHT);
-        }
-
-        @Override
-        public void paintComponent(Graphics g) { // Panel3 - the child panel
-//            super.paintComponent(g);
-//            setBounds(200,200, LBL_WIDTH*2, LBL_HEIGHT);
-//            g.setColor(Color.YELLOW);
-//            g.fillRect(50, 50, 25, 25);
-            Graphics2D g2 = (Graphics2D) g;
-//            //setBounds(200,200, LBL_WIDTH*3, LBL_HEIGHT);
-//            Rectangle2D rect = new Rectangle2D.Double(LBL_HEIGHT/4,LBL_HEIGHT/4, LBL_WIDTH, LBL_HEIGHT/2);
-//            g2.setPaint(Color.YELLOW);
-//            g2.fill(rect);
-//            g2.draw(rect);
-
-            TestColorDots(g2);
-        }
-
-//        @Override
-//        public Dimension getPreferredSize() { return new Dimension(500,500); }
-    }
-
+    /**
+     * Draws X-axis with tick marks and year labels.
+     * @param numYears Number of years for X-axis.
+     * @param startYear Starting year for X-axis.
+     * @param g2 graphics environment.
+     */
     private void DrawXAxisTicksAndLabels(int numYears, int startYear, Graphics2D g2) {
         if (numYears <= 1)
             return;
@@ -187,6 +194,12 @@ public class GraphView2 extends JPanel {
         }
     }
 
+    /**
+     * Returns the number of year intervals for the X-axis such that it is a
+     * multiple of 2 or 5 (which includes 10) but no more than MAX_X_INTERVALS.
+     * @param numYears Number of years to be represented on X-axis.
+     * @return specified integer.
+     */
     private int findNumberYearIntervals(int numYears) {
         int numIntervals = numYears - 1;
         if (numIntervals <= MAX_X_INTERVALS)
@@ -206,6 +219,12 @@ public class GraphView2 extends JPanel {
         return numIntervals + ((numYears - 1) % ((numYears - 1) / numIntervals) == 0 ? 0 : 1); // FIX THIS, LIKE THE OTHERS
     }
 
+    /**
+     * Returns number of years in each interval.
+     * @param numYears total number of years to be represented.
+     * @param numIntervals number of intervals required.
+     * @return specified integer.
+     */
     private int findXIntervalSize(int numYears, int numIntervals) {
         int interval = (numYears - 1) / numIntervals;
         if ((numYears - 1) % numIntervals == 0)
@@ -213,8 +232,19 @@ public class GraphView2 extends JPanel {
         return (int)Math.round(interval * (1.0 + 1.0/numIntervals) + 0.5);
     }
 
+    /**
+     *
+     * @param numIntervals Number of intervals for the Y-axis.
+     * @param maxY either the largest Y value in the data set if findTop is to
+     *             be true; or the maximum value labeled on Y-axis if findTop
+     *             is to be false.
+     * @param g2 graphics environment.
+     * @param findTop boolean, if true then a whole number value greater than
+     *               maxY will be used as the largest Y-axis value; if false,
+     *               then maxY is used as the largest Y-axis value.
+     */
     private void DrawYAxisTicksAndLabels(int numIntervals, double maxY, Graphics2D g2, boolean findTop) {
-        if (numIntervals == 1)
+        if (numIntervals <= 1)
             return;
 
         double topYValue = maxY;
@@ -235,6 +265,14 @@ public class GraphView2 extends JPanel {
         }
     }
 
+    /**
+     * Returns String to be used as a printf format which determines the number
+     * of decimal places to print based on the magnitude of maxY. The larger the
+     * value of maxY the fewer the decimal places in order fit in finite space.
+     * @param maxY value used to determine number of decimal places in returned
+     *             String format.
+     * @return specified String.
+     */
     private String makeFormatString(double maxY) {
         final double MAX_LOG = 3.0;
 
@@ -244,6 +282,12 @@ public class GraphView2 extends JPanel {
         return String.format("%%5.%df", Math.log10(maxY) >= MAX_LOG ? 0 : 1 );
     }
 
+    /**
+     * Returns a 'rounded up' value close to, but larger than max. If a non-positive
+     * value is passed then TOP_Y_VALUE_DEFAULT is returned.
+     * @param max value to determine a 'rounded up' value from.
+     * @return specified double.
+     */
     private double findTopYValue(double max) {
         if (max <= 0.0)
             return TOP_Y_VALUE_DEFAULT;
@@ -286,5 +330,38 @@ public class GraphView2 extends JPanel {
         int green = (~color.getGreen()) & 0xff;
 
         return new Color(red, green, blue);
+    }
+
+    /**
+     * One object of this class creates an orange square. TEST PURPOSES ONLY.
+     */
+    class MyPanel3 extends JPanel {
+        final int LBL_WIDTH = 100, LBL_HEIGHT = 50;
+
+        public MyPanel3() {
+            setBorder(BorderFactory.createLineBorder(Color.ORANGE));
+            setOpaque(true);
+            setForeground(Color.BLACK);
+            setBounds(200,200, LBL_WIDTH*3, LBL_HEIGHT);
+        }
+
+        @Override
+        public void paintComponent(Graphics g) { // Panel3 - the child panel
+//            super.paintComponent(g);
+//            setBounds(200,200, LBL_WIDTH*2, LBL_HEIGHT);
+//            g.setColor(Color.YELLOW);
+//            g.fillRect(50, 50, 25, 25);
+            Graphics2D g2 = (Graphics2D) g;
+//            //setBounds(200,200, LBL_WIDTH*3, LBL_HEIGHT);
+//            Rectangle2D rect = new Rectangle2D.Double(LBL_HEIGHT/4,LBL_HEIGHT/4, LBL_WIDTH, LBL_HEIGHT/2);
+//            g2.setPaint(Color.YELLOW);
+//            g2.fill(rect);
+//            g2.draw(rect);
+
+            TestColorDots(g2);
+        }
+
+//        @Override
+//        public Dimension getPreferredSize() { return new Dimension(500,500); }
     }
 }

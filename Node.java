@@ -1,5 +1,5 @@
 /**
- * One object of this class contains .............
+ * One object of this class contains generic data and reference to another node.
  */
 public class Node<E> {
     private E data;

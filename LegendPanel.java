@@ -2,7 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 
 /**
- * An object of type LegendPanel provides a visual guide to the set of random country elements graphed.
+ * An object of type LegendPanel contains the color legend to the set of random
+ * country elements graphed.
  */
 public class LegendPanel extends JPanel {
     // Legend graphing parameters
@@ -13,6 +14,12 @@ public class LegendPanel extends JPanel {
     private int maxNameLength = 0;
     private LinkedList<Country_Legend> legendList = new LinkedList<>();
 
+    /**
+     * Adds name and color to a LinkedList. The name is trimmed before being added.
+     * @param name Country name.
+     * @param color plotted color for country data.
+     * @return true if successfully added to LinkedList.
+     */
     public boolean add(String name, Color color) {
         name = name.trim();
         if (name.length() > maxNameLength)
@@ -21,8 +28,15 @@ public class LegendPanel extends JPanel {
         return legendList.add(new Country_Legend(name, color));
     }
 
-    public void graphLegends(Graphics2D g2) {
-        // graph Legend
+    /**
+     * Paints the color legend in the panel.
+     * @param g graphics environment.
+     */
+    @Override
+    public void paintComponent(Graphics g) {         // INVOKED AUTOMATICALLY WHEN ADDED OR RESIZED OR ...
+        //super.paintComponent(g);                     // See p.558 in Core Java for explanation
+        Graphics2D g2 = (Graphics2D) g;
+
         Font oldFont = g2.getFont();
         g2.setFont(new Font("MONOSPACED",Font.PLAIN, 14));
 
@@ -37,13 +51,6 @@ public class LegendPanel extends JPanel {
             ++countryCounter;
         }
         g2.setFont(oldFont);
-    }
-
-    @Override
-    public void paintComponent(Graphics g) {         // INVOKED AUTOMATICALLY WHEN ADDED OR RESIZED OR ...
-        //super.paintComponent(g);                     // See p.558 in Core Java for explanation
-        Graphics2D g2 = (Graphics2D) g;
-        graphLegends(g2);
     }
 
     /**
@@ -68,6 +75,9 @@ public class LegendPanel extends JPanel {
     }
 
     // inner class
+    /**
+     * Wrapped to hold name and country data for legendList.
+     */
     private class Country_Legend {
         private String name;
         private Color color;
