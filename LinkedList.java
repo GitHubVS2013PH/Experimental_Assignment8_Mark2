@@ -79,7 +79,7 @@ public class LinkedList<E> implements Iterable<E> {
         if (index < 0)
             throw new IndexOutOfBoundsException("Negative index given to insertAtIndex(): " + index);
 
-        if (head == null) // insert into empty list             // COULD USE ADD METHOD FOR NULL & LAST
+        if (head == null) // insert into empty list
             head = tail = new Node<>(data);
 
         else if (index >= size) // insert at end of list
@@ -107,9 +107,6 @@ public class LinkedList<E> implements Iterable<E> {
         Iterator<E> iter = iterator();
         while (iter.hasNext())
             rtnVal += iter.next().toString() + "\n";
-/*
-        for (Node<E> node = head; node != null; node = node.getNext())
-            rtnVal += node.getData().toString() + "\n";*/
 
         return rtnVal;
     }

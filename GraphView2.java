@@ -6,39 +6,46 @@ import java.awt.geom.Rectangle2D;
 
 
 public class GraphView2 extends JPanel {
-    //final private int width, height,
-    final private int numYears;
-    private int plottedXmin, plottedXmax, plottedYmin, plottedYmax;
     private Font font;
+    private int numYears;
+    private int plottedXmin, plottedXmax, plottedYmin, plottedYmax;
 
-    final private int YEARS_FOR_MAX = 10;
     final private LegendPanel pointLegends = new LegendPanel();
     final private LinkedList<ColoredPoint> graphPoints = new LinkedList<>();  // STRUCTURE SAME AS LEGENDS???
 
     // Data plotting parameters
-    final int MARGIN = 40, TICK_SIZE = 10, POINT_SIZE = 10;
-    final int DATA_SHIFT = 35, DATE_SHIFT = 13;
-    final int MAX_X_INTERVALS = 10, NUM_Y_INTERVALS = 10;
-    final private int dataMinX, dataMaxX;
-    final private double dataMinY = 0.0, dataMaxY;                 // SHOULD THESE BE ALL CAPS?
+    private int dataMinX, dataMaxX;
+    private double dataMinY = 0.0, dataMaxY;
+    final private int YEARS_FOR_MAX = 10;
+    final private boolean CONNECT_DOTS = true;
     final private double TOP_Y_VALUE_DEFAULT = 200.0;
+    final int MARGIN = 40, TICK_SIZE = 14, POINT_SIZE = 10;
+    final int Y_LBL_SHIFT_X = 38, Y_LBL_SHIFT_Y = 5, X_LBL_SHIFT_Y = 13;
+    final int MAX_X_INTERVALS = 10, NUM_Y_INTERVALS = 10;
 
-    // Color scheme
+    // Legend color scheme
     final private static Color[] colorArray = {Color.black, Color.blue, Color.cyan,
             Color.darkGray, Color.green, Color.lightGray, Color.magenta,
             Color.orange, Color.pink, Color.red, Color.yellow};
-//    private JLayeredPane layeredPane;
-//    private JLabel label;
-//    final int OFFSET = 35;
 
     public GraphView2(int width, int height, LinkedList<Country> countries) {
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
         setOpaque(true);
-        setForeground(Color.BLACK);
+        //setForeground(Color.BLACK);
         setBounds(0,0, width, height);
+        setPreferredSize(new Dimension(width, height)); // sets size for pack()
         font = new Font("Serif", Font.PLAIN, 11);
 
+        setMapAndAxisParameters(width, height, countries);
+        mapValues(countries);
+
+        JPanel myPanel2 = new MyPanel2();
+        add(myPanel2);
+        //add(myPanel3);
+    }
+
+    private void setMapAndAxisParameters(int width, int height, LinkedList<Country> countries) {
         // map method parameters
         plottedXmin = MARGIN;
         plottedYmin = height - MARGIN;
@@ -50,7 +57,7 @@ public class GraphView2 extends JPanel {
         dataMaxX = countries.getIndex(0).getEndYear();
         numYears = dataMaxX - dataMinX + 1;
 
-        // Set Y-axis max (min already set as 0.0)
+        // Set Y-axis max (Y min already set as 0.0)
         int yearsToSkip = numYears - Math.min(numYears, YEARS_FOR_MAX);
         double dataMax = 0.0;
         for(Country country : countries) {
@@ -59,8 +66,9 @@ public class GraphView2 extends JPanel {
                 dataMax = Math.max(dataMax, subYear[i].getSubscriptions());
         }
         dataMaxY = findTopYValue(dataMax); // "round up" to next whole value
+    }
 
-        // map values and save
+    private void mapValues(LinkedList<Country> countries) {
         int countryCntr = 0;
         for(Country country : countries) {
             SubscriptionYear[] subYears = country.getSubscriptions();
@@ -74,34 +82,6 @@ public class GraphView2 extends JPanel {
             pointLegends.add(country.getName(), pntColor);
             ++countryCntr;
         }
-
-        JPanel myPanel2 = new MyPanel2(); // PASS pntColor LINKED LIST TO MYPANEL3 OR EQUIV.
-        add(myPanel2);
-        //add(myPanel3);
-
-//        Container myPane = getContentPane();
-//        myPane.setLayout(new BoxLayout(myPane, BoxLayout.PAGE_AXIS));
-//
-//        layeredPane = new JLayeredPane();
-//        layeredPane.setPreferredSize(new Dimension(500, 500));
-//        layeredPane.setBorder(BorderFactory.createTitledBorder(title));
-//
-//        Point origin = new Point(10, 20);
-//        label = createColoredLabel("Label 1", Color.RED, origin);
-//        layeredPane.add(label, new Integer(1));
-//
-//        origin.x += OFFSET;
-//        origin.y += OFFSET;
-//        label = createColoredLabel("Label 0", Color.BLUE, origin);
-//        layeredPane.add(label, new Integer(0));
-//
-//        JPanel myPanel = new MyPanel();
-//        layeredPane.add(myPanel, new Integer(2));
-//
-//        JPanel myPanel2 = new MyPanel2();
-//        layeredPane.add(myPanel2, new Integer(3));
-//
-//        add(layeredPane);
     }
 
     static public final double map(double value, double dataMin, double dataMax, double plottedMin, double plottedMax) {
@@ -109,16 +89,13 @@ public class GraphView2 extends JPanel {
     }
 
     class MyPanel2 extends JPanel {
-        final int LBL_WIDTH = 100, LBL_HEIGHT = 50;
-        JPanel myPanel3;
-
         public MyPanel2() {
             setLayout(new BorderLayout());  // new
-            setBorder(BorderFactory.createLineBorder(Color.CYAN));
+            setBorder(BorderFactory.createLineBorder(Color.BLACK));
             setOpaque(true);
             setForeground(Color.BLACK);
             setBounds(0,0, getWidth(), getHeight());
-            myPanel3 = new MyPanel3();
+            //JPanel myPanel3 = new MyPanel3();
             //add(myPanel3,BorderLayout.CENTER); // <--------------- Legends to added like this
             add(pointLegends, BorderLayout.CENTER);
         }
@@ -159,8 +136,8 @@ public class GraphView2 extends JPanel {
             g2.setColor(oldColor);
         }
 
-        @Override
-        public Dimension getPreferredSize() { return new Dimension(500,500); }
+//        @Override
+//        public Dimension getPreferredSize() { return new Dimension(500,500); }
     }
 
     class MyPanel3 extends JPanel {
@@ -189,8 +166,8 @@ public class GraphView2 extends JPanel {
             TestColorDots(g2);
         }
 
-        @Override
-        public Dimension getPreferredSize() { return new Dimension(500,500); }
+//        @Override
+//        public Dimension getPreferredSize() { return new Dimension(500,500); }
     }
 
     private void DrawXAxisTicksAndLabels(int numYears, int startYear, Graphics2D g2) {
@@ -206,7 +183,7 @@ public class GraphView2 extends JPanel {
         for (int i = 0; i <= numYearLabels; ++i) {
             int xPos = plottedXmin + (int) (i * spacing);
             g2.drawLine(xPos, tickTop, xPos, tickBtm);
-            g2.drawString(Integer.toString(startYear + i * yearsPerInterval), xPos - DATE_SHIFT, plottedYmin + 2*TICK_SIZE);
+            g2.drawString(Integer.toString(startYear + i * yearsPerInterval), xPos - X_LBL_SHIFT_Y, plottedYmin + 2*TICK_SIZE);
         }
     }
 
@@ -254,14 +231,14 @@ public class GraphView2 extends JPanel {
             int yPos = plottedYmin - (int)(i * spacing);
             g2.drawLine(tickLeft, yPos, tickRight, yPos);
             String dataStr = String.format(formatStr, yDelta * i);
-            g2.drawString(dataStr, plottedXmin - DATA_SHIFT, yPos + TICK_SIZE / 2);
+            g2.drawString(dataStr, plottedXmin - Y_LBL_SHIFT_X, yPos + Y_LBL_SHIFT_Y);
         }
     }
 
     private String makeFormatString(double maxY) {
         final double MAX_LOG = 3.0;
 
-        if (maxY <= 0.0)
+        if (maxY <= 0.0) // can't take log of a negative maxY
             return "%%5.1f";
 
         return String.format("%%5.%df", Math.log10(maxY) >= MAX_LOG ? 0 : 1 );
@@ -275,10 +252,12 @@ public class GraphView2 extends JPanel {
         return (1.0 + Math.floor(max / increment)) * increment;
     }
 
-
-
+    /**
+     * Generates color dot test pattern. Useful for debugging.
+     * @param g2 Graphics2D graph object.
+     */
     public void TestColorDots(Graphics2D g2) {
-        // masked attrributes
+        // masked attributes
         int plottedXmax = getWidth() * 4 / 5;
         int plottedYmin = getHeight() *4 / 5;
 

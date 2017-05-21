@@ -14,6 +14,7 @@ public class GraphFrame2 extends JFrame {
         LinkedList<Country> selectedCountries = buildSelectedCountryList();
         GraphView2 myGraphView = new GraphView2(width, height, selectedCountries);
         add(myGraphView);
+        pack(); // sets display size based on setPreferredSize()
     }
 
     private LinkedList<Country> buildSelectedCountryList() {

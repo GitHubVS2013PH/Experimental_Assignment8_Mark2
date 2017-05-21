@@ -68,7 +68,7 @@ public class LegendPanel extends JPanel {
     }
 
     // inner class
-    protected class Country_Legend {                            // WHAT ACCESS SHOULD THIS HAVE? PROTECTED?
+    private class Country_Legend {
         private String name;
         private Color color;
 
