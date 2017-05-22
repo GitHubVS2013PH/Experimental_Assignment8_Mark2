@@ -45,13 +45,18 @@ public class GraphView2 extends JPanel {
         font = new Font("Serif", Font.PLAIN, 11);
 
         setMapAndAxisParameters(width, height, countries);
-        mapValues(countries);
-
-        JPanel myPanel2 = new GraphPanel();
-        add(myPanel2);
-        //add(myPanel3);
+        graphValues(countries);
+        this.add(new GraphPanel());
+        //add(myPanel3); // for debugging
     }
 
+    /**
+     * Initializes Axis and Graphing (Map) parameters.
+     * @param width frame width.
+     * @param height frame height.
+     * @param countries LinkedList of Countries objects to be graphed (from which
+     *                 graph parameters are derived).
+     */
     private void setMapAndAxisParameters(int width, int height, LinkedList<Country> countries) {
         // map method parameters
         plottedXmin = MARGIN;
@@ -75,7 +80,12 @@ public class GraphView2 extends JPanel {
         dataMaxY = findTopYValue(dataMax); // "round up" to next whole value
     }
 
-    private void mapValues(LinkedList<Country> countries) {
+    /**
+     * Graphs data from countries LinkedList and prepares pointLegends LinkedList
+     * which contains the color legend information.
+     * @param countries LinkedList of Country objects to be graphed.
+     */
+    private void graphValues(LinkedList<Country> countries) {
         int countryCntr = 0;
         for(Country country : countries) {
             SubscriptionYear[] subYears = country.getSubscriptions();
@@ -91,6 +101,15 @@ public class GraphView2 extends JPanel {
         }
     }
 
+    /**
+     * Returns a mapped original data point as a graph data point.
+     * @param value original data point value.
+     * @param dataMin minimum of the data range.
+     * @param dataMax maximum of the data range.
+     * @param plottedMin minimum of the graph range.
+     * @param plottedMax maximum of the graph range.
+     * @return specified coordinate double.
+     */
     static public final double map(double value, double dataMin, double dataMax, double plottedMin, double plottedMax) {
         return plottedMin + (plottedMax - plottedMin) * ((value - dataMin) / (dataMax - dataMin));
     }
@@ -108,7 +127,7 @@ public class GraphView2 extends JPanel {
             setBounds(0,0, getWidth(), getHeight());
             //JPanel myPanel3 = new MyPanel3();
             //add(myPanel3,BorderLayout.CENTER); // <--------------- Legends to added like this
-            add(pointLegends, BorderLayout.CENTER); // adds legend panel to graph panel
+            this.add(pointLegends, BorderLayout.CENTER); // adds legend panel to graph panel
         }
 
         /**
